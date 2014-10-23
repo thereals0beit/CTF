@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name       FreddyWeb v2
+// @name       FreddyWeb v3
 // @namespace  http://s0beit.me
 // @version    1.0
 // @description  fuck off craptcha
@@ -31,14 +31,9 @@ function solveCaptcha() {
         return a.n > b.n;
     });
     
-    var captchaString = '';
-    for(var i = 0; i < captchaElements.length; i++) {
-        captchaString += captchaElements[i].t;
-    }
-    
-    console.log(captchaString);
-    
+    var captchaString = captchaElements.map(function(elem){return elem.t;}).join('');
     unsafeWindow.document.getElementsByName('solution')[0].value = captchaString;
+    console.log(captchaString);
     
     if(document.getElementsByTagName('a')[2].getAttribute('href').indexOf('login') != -1) {
         console.log('OK!');
