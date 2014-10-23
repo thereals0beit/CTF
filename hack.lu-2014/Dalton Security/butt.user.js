@@ -1,15 +1,27 @@
 // ==UserScript==
-// @name       FreddyWeb
+// @name       FreddyWeb v2
 // @namespace  http://s0beit.me
 // @version    1.0
 // @description  fuck off craptcha
 // @match      https://wildwildweb.fluxfingers.net:1422/
 // @copyright  2014+, s0beit
-// @require    http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js
 // @run-at     document-start
 // ==/UserScript==
 
-HTMLCanvasElement.prototype.getContext2 = HTMLCanvasElement.prototype.getContext;
+console.log('Loading...');
+console.log(HTMLCanvasElement.prototype.getContext);
+console.log(CanvasRenderingContext2D.prototype.fillText);
+
+CanvasRenderingContext2D.prototype.fillText2 = CanvasRenderingContext2D.prototype.fillText;
+CanvasRenderingContext2D.prototype.fillText = function(text, x, y) {
+    canvasCount++;
+    console.log('ft[' + x + '][' + canvasCount + ']: ' + text);
+    captchaElements.push({n:x, t:text});
+    if(canvasCount == 8) { solveCaptcha(); }
+    return this.fillText2(text, x, y);
+};
+
+console.log('Hook in place...');
 
 var canvasCount = 0;
 var captchaElements = [];
@@ -26,26 +38,15 @@ function solveCaptcha() {
     
     console.log(captchaString);
     
-    $('input[name="solution"]').val(captchaString);
-    $('form').submit();
-}
-
-HTMLCanvasElement.prototype.getContext = function(type) {
-    console.log('getContext(' + type + ')');
-    var returnValue = this.getContext2(type);
-    console.log('returnValue.fillText = ' + returnValue.fillText);
-    returnValue.fillText2 = returnValue.fillText;
-    returnValue.fillText = function(text, x, y) {
-        canvasCount++;
-        console.log('ft[' + x + '][' + canvasCount + ']: ' + text);
-        captchaElements.push({n:x, t:text});
-        
-        if(canvasCount == 8) {
-            solveCaptcha();
-        }
-        
-        return this.fillText2(text, x, y);
-    };
+    unsafeWindow.document.getElementsByName('solution')[0].value = captchaString;
     
-    return returnValue;
-};
+    if(document.getElementsByTagName('a')[2].getAttribute('href').indexOf('login') != -1) {
+        console.log('OK!');
+        
+        unsafeWindow.document.location = document.getElementsByTagName('a')[2].getAttribute('href');
+    } else {
+        console.log('Solving...');
+        
+        unsafeWindow.document.getElementsByName('solution')[0].parentElement.submit();
+    }
+}
